@@ -1,0 +1,14 @@
+{{if .Values.l2Announcements.enabled}}
+{{- range .Values.l2Announcements.policies }}
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: {{.name}}
+  namespace: {{$.Release.Namespace}}
+spec:
+  interfaces:
+    - ^eth[0-9]+
+  externalIPs: {{.externalIPs | default false}}
+  loadBalancerIPs: {{.loadBalancerIPs |default false}}
+{{end}}
+{{end}}

@@ -1,0 +1,40 @@
+tf: 2
+
+image:
+  tag: "2025.08.0"
+
+loadBalancer:
+  enabled: false
+  port: 53
+  annotations:
+    service.cilium.io/type: LoadBalancer
+    service.cilium.io/forwarding-mode: snat
+
+service:
+  enabled: true
+  port: 80
+httpRoute:
+  enabled: true
+  host: pihole.kind.local
+  parent:
+    name: private-http
+    namespace: gateways
+    sectionName: http
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: pihole.kind.local
+
+storage:
+  className: standard
+  resources:
+    requests:
+      storage: 512Mi
+    limits:
+      storage: 1Gi
+
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 50m
+  limits:
+    memory: 128Mi
+    cpu: 500m

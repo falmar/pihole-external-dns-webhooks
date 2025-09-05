@@ -1,0 +1,11 @@
+httpRoute:
+  enabled: false
+  host: ~
+  parent:
+    name: ~
+    namespace: ~
+    sectionName: ~
+  backend:
+    name: ~
+    port: ~
+  annotations: {}

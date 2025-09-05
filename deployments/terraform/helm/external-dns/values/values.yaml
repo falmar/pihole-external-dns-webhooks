@@ -1,0 +1,47 @@
+tf: 8081
+
+podSecurityContext:
+  runAsNonRoot: false
+
+provider:
+  name: webhook
+  webhook:
+    image:
+      repository: "docker.io/falmar/pihole-webhooks"
+      tag: "01"
+      pullPolicy: Always
+    env:
+      - name: PORT
+        value: "8080"
+
+registry: noop
+
+logLevel: debug
+interval: 15s
+gatewayNamespace: gateways
+sources:
+  - gateway-httproute
+#  - gateway-grpcroute
+#  - service
+
+extraArgs:
+  - --webhook-provider-url
+  - 'http://localhost:8080'
+
+rbac:
+  create: true
+  additionalPermissions:
+    - apiGroups: [ "" ]
+      resources: [ "namespaces" ]
+      verbs: [ "get","watch","list" ]
+    - apiGroups: [ "gateway.networking.k8s.io" ]
+      resources: [ "gateways","httproutes","grpcroutes","tlsroutes" ]
+      verbs: [ "get","watch","list" ]
+
+resources:
+  requests:
+    memory: 32Mi
+    cpu: 10m
+  limits:
+    memory: 96Mi
+    cpu: 100m

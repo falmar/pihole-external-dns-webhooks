@@ -1,0 +1,37 @@
+{{if .Values.selfSigned.enabled}}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Release.Name }}-selfsigned-bootstrap
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Release.Name }}-selfsigned
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: kind-selfsigned-ca
+  secretName: {{ .Release.Name }}-selfsigned-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: {{ .Release.Name }}-selfsigned-bootstrap
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Release.Name }}-selfsigned
+  labels:
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+spec:
+  ca:
+    secretName: {{ .Release.Name }}-selfsigned-secret
+---
+{{end}}

@@ -1,0 +1,6 @@
+tf: 1
+
+className: cilium
+
+certificates:
+  enabled: true

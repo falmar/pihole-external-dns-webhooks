@@ -1,0 +1,9 @@
+apiVersion: v2
+name: crds
+description: Cert Manager CRDs
+type: application
+version: 0.0.0
+appVersion: "0.0.0"
+maintainers:
+  - email: david@lavieri.dev
+    name: David Lavieri

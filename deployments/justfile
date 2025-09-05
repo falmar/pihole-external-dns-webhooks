@@ -1,0 +1,33 @@
+set positional-arguments
+
+cluster_name := env_var_or_default('CLUSTER_NAME', 'pihole')
+kubeconfig := env_var_or_default("KUBECONFIG", "~/.kube/kind")
+
+# Pull and load Cilium images into kind cluster
+bootstrap:
+    docker pull quay.io/cilium/cilium:v1.18.0
+    docker pull quay.io/cilium/cilium-envoy:v1.34.4-1753677767-266d5a01d1d55bd1d60148f991b98dac0390d363
+    docker pull quay.io/cilium/operator:v1.18.0
+    docker pull quay.io/cilium/startup-script:c54c7edeab7fde4da68e59acd319ab24af242c3f
+
+image-load:
+    kind load docker-image quay.io/cilium/cilium:v1.18.0 --name {{cluster_name}}
+    kind load docker-image quay.io/cilium/cilium-envoy:v1.34.4-1753677767-266d5a01d1d55bd1d60148f991b98dac0390d363 --name {{cluster_name}}
+    kind load docker-image quay.io/cilium/operator:v1.18.0 --name {{cluster_name}}
+    kind load docker-image quay.io/cilium/startup-script:c54c7edeab7fde4da68e59acd319ab24af242c3f --name {{cluster_name}}
+
+create: bootstrap
+    kind create cluster --kubeconfig ~/.kube/kind --name {{cluster_name}} --config ./kind/config.yaml -v 100
+    just image-load
+
+delete:
+    kind delete cluster --name {{cluster_name}}
+
+init:
+    tofu -chdir=./terraform init
+
+apply *args:
+    tofu -chdir=./terraform apply --var "cluster_name={{cluster_name}}" --var "kubeconfig_path={{kubeconfig}}" "$@"
+
+destroy *args:
+    tofu -chdir=./terraform destroy --var "cluster_name={{cluster_name}}" --var "kubeconfig_path={{kubeconfig}}" "$@"

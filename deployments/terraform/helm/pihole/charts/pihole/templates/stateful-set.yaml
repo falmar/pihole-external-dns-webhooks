@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{.Release.Name}}-{{.Chart.Name}}
+  namespace: {{.Release.Namespace}}
+  labels:
+    app.kubernetes.io/component: pihole
+    app.kubernetes.io/name: pihole
+spec:
+  serviceName: {{.Release.Name}}-{{.Chart.Name}}
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: pihole
+      app.kubernetes.io/name: pihole
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: pihole
+        app.kubernetes.io/name: pihole
+    spec:
+      {{- with .Values.tolerations}}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end}}
+
+      {{- with .Values.affinity}}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end}}
+
+
+      containers:
+        - name: {{.Chart.Name}}
+          image: {{.Values.image.repository}}:{{.Values.image.tag}}
+          imagePullPolicy: {{.Values.image.pullPolicy}}
+          env:
+            - name: TZ
+              value: Europe/Madrid
+            - name: FTLCONF_webserver_api_password
+              valueFrom:
+                secretKeyRef:
+                  name: {{.Values.secret.name}}
+                  key: {{.Values.secret.key}}
+            - name: FTLCONF_dns_upstreams
+              value: "1.1.1.1;8.8.8.8"
+
+          ports:
+            - containerPort: 53
+              name: udp
+              protocol: UDP
+            - containerPort: 53
+              name: tcp
+              protocol: TCP
+            - containerPort: 80
+              name: http
+              protocol: TCP
+
+          volumeMounts:
+            - mountPath: /etc/pihole
+              name: data
+              subPath: pihole
+            - mountPath: /etc/dnsmasq.d
+              name: data
+              subPath: dnsmasq
+
+          {{- with .Values.resources}}
+          resources:
+            {{- toYaml . | nindent 10}}
+          {{- end}}
+
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: data
+      spec:
+        storageClassName: {{.Values.storage.className}}
+        volumeMode: Filesystem
+        accessModes:
+          - ReadWriteOnce
+        {{- with .Values.storage.resources}}
+        resources:
+          {{- toYaml . | nindent 10}}
+        {{- end}}

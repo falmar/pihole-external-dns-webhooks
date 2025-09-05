@@ -1,0 +1,22 @@
+{{if .Values.httpRoute.enabled}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: smoke-test
+  namespace: {{.Release.Namespace}}
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+spec:
+  parentRefs:
+    - name: {{.Values.httpRoute.parent.name}}
+      namespace: {{.Values.httpRoute.parent.namespace}}
+      sectionName: {{.Values.httpRoute.parent.sectionName}}
+  hostnames:
+    - {{.Values.httpRoute.host}}
+  rules:
+    - backendRefs:
+        - name: {{.Values.httpRoute.backend.name}}
+          port: {{.Values.httpRoute.backend.port}}
+{{end}}

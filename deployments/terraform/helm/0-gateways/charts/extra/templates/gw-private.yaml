@@ -1,0 +1,19 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: private-http
+  namespace: {{.Release.Namespace}}
+  labels:
+    networking.lavieri.dev/dns-private: "true"
+spec:
+  gatewayClassName: {{.Values.className}}
+  infrastructure:
+    annotations: { }
+  listeners:
+    - name: http
+      allowedRoutes:
+        namespaces:
+          from: All
+      port: 80
+      protocol: HTTP

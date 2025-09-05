@@ -1,0 +1,26 @@
+httpRoute:
+  enabled: false
+  host: ~
+  parent:
+    name: ~
+    namespace: ~
+    sectionName: ~
+  backend:
+    name: ~
+    port: ~
+  annotations: {}
+
+
+l2Announcements:
+  enabled: false
+  policies:
+    - name: default-l2-announcement-policy
+      externalIPs: true
+      loadBalancerIPs: true
+
+ipPools:
+  enabled: true
+  pools:
+    - name: lb-pool-1
+      start: "192.168.4.220"
+      stop: "192.168.4.249"
