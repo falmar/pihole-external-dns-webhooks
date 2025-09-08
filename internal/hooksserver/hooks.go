@@ -6,9 +6,9 @@ import (
 	"github.com/falmar/pihole-external-dns-webhooks/internal/dnssyncer"
 )
 
-type HookServer interface{}
+type HooksServer interface{}
 
-func NewHooksServer(logger *slog.Logger, syncer dnssyncer.DNSSyncer) HookServer {
+func NewHooksServer(logger *slog.Logger, syncer dnssyncer.DNSSyncer) HooksServer {
 	return &hooksServer{logger: logger, syncer: syncer}
 }
 

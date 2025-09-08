@@ -1,0 +1,54 @@
+package piholeapi
+
+import (
+	"context"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
+	"fmt"
+	"net/http"
+)
+
+type hostsResponse []string
+type dnsResponse struct {
+	Hosts hostsResponse `json:"hosts"`
+}
+type configResponse struct {
+	Config struct {
+		DNS *dnsResponse `json:"dns"`
+	} `json:"config"`
+
+	Took float64 `json:"took"`
+}
+
+func (p *piholeAPI) getConfig(ctx context.Context, element string) (*configResponse, error) {
+	sid, err := p.authenticate(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := p.getRequest(ctx, sid)
+	if err != nil {
+		return nil, err
+	}
+
+	req.URL.Path = fmt.Sprintf("/api/config/%s", element)
+	req.Method = "GET"
+
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	configRes := &configResponse{}
+	err = json.UnmarshalDecode(jsontext.NewDecoder(resp.Body), configRes)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode config response: %w", err)
+	}
+
+	return configRes, nil
+}
