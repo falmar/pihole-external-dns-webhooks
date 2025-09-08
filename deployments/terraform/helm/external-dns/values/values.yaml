@@ -10,9 +10,18 @@ provider:
       repository: "docker.io/falmar/pihole-webhooks"
       tag: "01"
       pullPolicy: Always
+    args:
+      - serve
     env:
       - name: PORT
         value: "8080"
+      - name: PEW_PIHOLE_ENDPOINT
+        value: "http://main-pihole.pihole-system.svc.cluster.local"
+      - name: PEW_PIHOLE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: pihole-pass
+            key: pass
 
 registry: noop
 

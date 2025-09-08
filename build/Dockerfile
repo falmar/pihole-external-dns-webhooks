@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:1.24-alpine3.21 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -10,6 +10,7 @@ ENV GOOS=$TARGETOS
 ENV GOARCH=$TARGETARCH
 ENV GOMODCACHE=/gomod-cache
 ENV GOCACHE=/go-cache
+ENV GOEXPERIMENT=jsonv2
 
 # Install dependencies
 COPY go.mod go.sum ./

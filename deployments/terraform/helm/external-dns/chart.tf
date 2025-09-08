@@ -11,5 +11,7 @@ resource "helm_release" "external_dns_pihole" {
   ]
 
   max_history = 5
-  depends_on  = []
+  depends_on  = [
+    kubernetes_secret.pass
+  ]
 }
