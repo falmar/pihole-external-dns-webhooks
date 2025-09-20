@@ -2,6 +2,7 @@ package piholeapi
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -68,12 +69,12 @@ func (p *piholeAPI) getRequest(ctx context.Context, sessID string) (*http.Reques
 		headers.Set("sid", sessID)
 	}
 
-	req := (&http.Request{
+	req := &http.Request{
 		URL:    u,
 		Header: headers,
-	}).WithContext(ctx)
+	}
 
-	return req, nil
+	return req.WithContext(ctx), nil
 }
 
 func (p *piholeAPI) GetDomains(ctx context.Context, t LocalDNSType) ([]*LocalDNSRecord, error) {
@@ -81,8 +82,7 @@ func (p *piholeAPI) GetDomains(ctx context.Context, t LocalDNSType) ([]*LocalDNS
 		return p.fetchARecords(ctx)
 	}
 
-	//TODO implement me
-	panic("implement me")
+	return nil, fmt.Errorf("not implemented for dns type: %s", t)
 }
 
 func (p *piholeAPI) SetDomain(ctx context.Context, r *LocalDNSRecord) error {

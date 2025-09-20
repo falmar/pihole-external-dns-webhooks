@@ -95,7 +95,7 @@ operator:
 
 # Hubble
 hubble:
-  enabled: true
+  enabled: false
 
   tls:
     enabled: false
@@ -104,7 +104,7 @@ hubble:
       method: helm
 
   relay:
-    enabled: true
+    enabled: false
     replicas: 1
     rollOutPods: false
     tolerations:
@@ -116,7 +116,7 @@ hubble:
         enabled: false
 
   ui:
-    enabled: true
+    enabled: false
     rollOutPods: true
     standalone:
       enabled: true
