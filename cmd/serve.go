@@ -125,7 +125,7 @@ func (svr *webhookServer) handleGetRecords(wr http.ResponseWriter, req *http.Req
 	wr.Header().Set("content-type", "application/external.dns.webhook+json;version=1")
 	wr.WriteHeader(http.StatusOK)
 
-	var records = []Record{}
+	var records = make([]Record, 0, len(piRecords))
 
 	for _, r := range piRecords {
 		records = append(records, Record{
