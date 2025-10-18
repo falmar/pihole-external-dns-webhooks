@@ -3,9 +3,6 @@ package slogger
 import (
 	"context"
 	"log/slog"
-
-	"go.uber.org/zap/exp/zapslog"
-	"go.uber.org/zap/zapcore"
 )
 
 type contextKey struct{}
@@ -17,7 +14,7 @@ func FromContext(ctx context.Context) *slog.Logger {
 		return logger
 	}
 
-	return slog.New(zapslog.NewHandler(zapcore.NewNopCore()))
+	return slog.New(slog.DiscardHandler)
 }
 
 func WithLogger(ctx context.Context, logger *slog.Logger) context.Context {
