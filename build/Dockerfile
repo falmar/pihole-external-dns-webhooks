@@ -10,7 +10,6 @@ ENV GOOS=$TARGETOS
 ENV GOARCH=$TARGETARCH
 ENV GOMODCACHE=/gomod-cache
 ENV GOCACHE=/go-cache
-ENV GOEXPERIMENT=jsonv2
 
 # Install dependencies
 COPY go.mod go.sum ./

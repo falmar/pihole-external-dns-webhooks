@@ -1,0 +1,3 @@
+pihole:
+  endpoint: "https://pihole.k8s.lavieri.dev"
+  password: "unMf>42;`RPyW@m~9.pvq-"

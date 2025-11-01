@@ -7,9 +7,9 @@ import (
 	"net/url"
 )
 
-func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord) error {
+func (p *piholeAPI) deleteDomain(ctx context.Context, r *LocalDNSRecord) error {
 	if r.Type != LocalDNSTypeA {
-		return fmt.Errorf("SetDomain not implemented for type %s", r.Type)
+		return fmt.Errorf("DeleteDomain not implemented for type %s", r.Type)
 	}
 
 	if r.Name == "" || r.Value == "" {
@@ -35,17 +35,17 @@ func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord) error {
 	}
 
 	req.URL.Path = fmt.Sprintf("/api/config/%s/%s", configEncoded, valueEncoded)
-	req.Method = "PUT"
+	req.Method = "DELETE"
 
-	p.logger.Info("setting domain", "name", r.Name, "ip", r.Value)
+	p.logger.Info("deleting domain", "name", r.Name, "ip", r.Value)
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("unable to set domain: %w", err)
+		return fmt.Errorf("unable to delete domain: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
