@@ -86,11 +86,11 @@ func (p *piholeAPI) GetDomains(ctx context.Context, t LocalDNSType) ([]*LocalDNS
 }
 
 func (p *piholeAPI) SetDomain(ctx context.Context, r *LocalDNSRecord) error {
-	//TODO implement me
-	panic("implement me")
+	// Placeholder: implement create/update for A and CNAME records via Pi-hole v6 API
+	return fmt.Errorf("SetDomain not implemented for type %s", r.Type)
 }
 
 func (p *piholeAPI) DeleteDomain(ctx context.Context, r *LocalDNSRecord) error {
-	//TODO implement me
-	panic("implement me")
+	// Placeholder: implement delete for A and CNAME records via Pi-hole v6 API
+	return fmt.Errorf("DeleteDomain not implemented for type %s", r.Type)
 }

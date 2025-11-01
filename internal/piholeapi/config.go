@@ -2,8 +2,7 @@ package piholeapi
 
 import (
 	"context"
-	"encoding/json/jsontext"
-	"encoding/json/v2"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -45,8 +44,7 @@ func (p *piholeAPI) getConfig(ctx context.Context, element string) (*configRespo
 	}
 
 	configRes := &configResponse{}
-	err = json.UnmarshalDecode(jsontext.NewDecoder(resp.Body), configRes)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(configRes); err != nil {
 		return nil, fmt.Errorf("unable to decode config response: %w", err)
 	}
 
