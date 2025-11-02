@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/falmar/pihole-external-dns-webhooks/internal/dnssyncer"
 	"github.com/falmar/pihole-external-dns-webhooks/internal/hooksserver"
@@ -53,8 +54,9 @@ var serveCmd = &cobra.Command{
 		setupRoutes(mux, hooksServer)
 
 		svr := &http.Server{
-			Addr:    ":" + port,
-			Handler: handler,
+			Addr:              ":" + port,
+			Handler:           handler,
+			ReadHeaderTimeout: 10 * time.Second,
 		}
 
 		errChan := make(chan error, 1)

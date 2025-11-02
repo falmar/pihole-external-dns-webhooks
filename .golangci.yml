@@ -1,0 +1,81 @@
+run:
+  timeout: 5m
+  tests: true
+
+issues:
+  exclude-rules:
+    # Exclude some linters from test files
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gocyclo
+    
+    # Exclude vendor directory
+    - path: vendor
+      linters:
+        - all
+  
+  exclude:
+    # Exclude common false positives
+    - Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked
+  
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+  
+  gocyclo:
+    min-complexity: 20
+  
+  gocognit:
+    min-complexity: 25
+  
+  funlen:
+    lines: 150
+    statements: 75
+  
+  lll:
+    line-length: 140
+  
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  
+  goimports:
+    local-prefixes: github.com/falmar/pihole-external-dns-webhooks
+  
+  gosec:
+    severity: medium
+    confidence: medium
+
+linters:
+  enable:
+    # Core recommended linters
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    
+    # Code quality
+    - gocognit
+    - gocyclo
+    - funlen
+    
+    # Code style
+    - gofmt
+    - goimports
+    - misspell
+    
+    # Security
+    - gosec
+    
+    # Best practices
+    - bodyclose
+    - noctx
+    - unconvert
