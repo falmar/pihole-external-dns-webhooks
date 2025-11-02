@@ -8,7 +8,7 @@ provider:
   webhook:
     image:
       repository: "docker.io/falmar/pihole-webhooks"
-      tag: "02"
+      tag: "01"
       pullPolicy: Always
     args:
       - serve
