@@ -50,7 +50,10 @@ type adjustEndpointsResponse struct {
 // makeNegotiationEndpoint creates an endpoint for the negotiation handler
 func makeNegotiationEndpoint(svc Service, _ *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		_ = request.(negotiationRequest) // Validate request type
+		_, ok := request.(negotiationRequest) // Validate request type
+		if !ok {
+			return nil, fmt.Errorf("invalid request type: expected negotiationRequest")
+		}
 
 		filters := svc.GetFilters()
 
@@ -63,7 +66,10 @@ func makeNegotiationEndpoint(svc Service, _ *slog.Logger) kit.Endpoint {
 // makeGetRecordsEndpoint creates an endpoint for the get records handler
 func makeGetRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		_ = request.(getRecordsRequest) // Validate request type
+		_, ok := request.(getRecordsRequest) // Validate request type
+		if !ok {
+			return nil, fmt.Errorf("invalid request type: expected getRecordsRequest")
+		}
 
 		records, err := svc.GetRecords(ctx)
 		if err != nil {
@@ -80,7 +86,10 @@ func makeGetRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 // makePostRecordsEndpoint creates an endpoint for the post records handler
 func makePostRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(postRecordsRequest)
+		req, ok := request.(postRecordsRequest)
+		if !ok {
+			return nil, fmt.Errorf("invalid request type: expected postRecordsRequest")
+		}
 
 		if req.ChangeSetRequest == nil {
 			return nil, errors.New("change set request is required")
@@ -136,7 +145,10 @@ func makePostRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 // makeAdjustEndpointsEndpoint creates an endpoint for the adjust endpoints handler
 func makeAdjustEndpointsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(adjustEndpointsRequest)
+		req, ok := request.(adjustEndpointsRequest)
+		if !ok {
+			return nil, fmt.Errorf("invalid request type: expected adjustEndpointsRequest")
+		}
 
 		adjusted, err := svc.AdjustEndpoints(ctx, req.Records)
 		if err != nil {
