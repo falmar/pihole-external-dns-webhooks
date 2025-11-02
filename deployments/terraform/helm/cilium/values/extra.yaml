@@ -12,3 +12,8 @@ httpRoute:
     port: 80
   annotations:
     external-dns.alpha.kubernetes.io/hostname: "hubble.kind.local"
+
+l2Announcements:
+  enabled: false
+ipPools:
+  enabled: false

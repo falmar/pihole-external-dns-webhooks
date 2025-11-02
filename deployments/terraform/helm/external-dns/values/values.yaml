@@ -8,13 +8,17 @@ provider:
   webhook:
     image:
       repository: "docker.io/falmar/pihole-webhooks"
-      tag: "01"
+      tag: "02"
       pullPolicy: Always
     args:
       - serve
     env:
       - name: PORT
         value: "8080"
+      - name: LOG_LEVEL
+        value: debug
+      - name: PEW_FILTERS
+        value: '["kind.local"]'
       - name: PEW_PIHOLE_ENDPOINT
         value: "http://main-pihole.pihole-system.svc.cluster.local"
       - name: PEW_PIHOLE_PASSWORD

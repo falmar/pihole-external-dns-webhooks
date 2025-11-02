@@ -19,6 +19,7 @@ image-load:
 create: bootstrap
     kind create cluster --kubeconfig ~/.kube/kind --name {{cluster_name}} --config ./kind/config.yaml -v 100
     just image-load
+    just apply -target="module.helm_cilium.helm_release.cilium"
 
 delete:
     kind delete cluster --name {{cluster_name}}
@@ -28,6 +29,9 @@ init:
 
 apply *args:
     tofu -chdir=./terraform apply --var "cluster_name={{cluster_name}}" --var "kubeconfig_path={{kubeconfig}}" "$@"
+
+refresh *args:
+    tofu -chdir=./terraform refresh --var "cluster_name={{cluster_name}}" --var "kubeconfig_path={{kubeconfig}}" "$@"
 
 destroy *args:
     tofu -chdir=./terraform destroy --var "cluster_name={{cluster_name}}" --var "kubeconfig_path={{kubeconfig}}" "$@"

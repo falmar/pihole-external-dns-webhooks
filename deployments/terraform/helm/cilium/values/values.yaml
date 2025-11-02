@@ -54,7 +54,7 @@ gatewayAPI:
   enableAppProtocol: true
   enableAlpn: true
   hostNetwork:
-    enabled: false
+    enabled: true
   gatewayClass:
     create: "true"
 #  secretsNamespace:

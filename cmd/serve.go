@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
 	"log/slog"
 	"net/http"
 
+	"github.com/falmar/pihole-external-dns-webhooks/internal/dnssyncer"
+	"github.com/falmar/pihole-external-dns-webhooks/internal/hooksserver"
 	"github.com/falmar/pihole-external-dns-webhooks/internal/piholeapi"
 	"github.com/falmar/pihole-external-dns-webhooks/internal/slogger"
 	"github.com/spf13/cobra"
@@ -21,23 +21,41 @@ var serveCmd = &cobra.Command{
 
 		port := viper.GetString("port")
 
+		// Initialize Pi-hole API client
+		piAPI := piholeapi.NewPiholeAPI(&piholeapi.Config{
+			Logger:   logger,
+			Endpoint: viper.GetString("pihole.endpoint"),
+			Password: viper.GetString("pihole.password"),
+		})
+
+		// Initialize DNSSyncer (placeholder for future multi-instance support)
+		syncer := dnssyncer.NewSyncer(logger)
+
+		// Get filters from config (can be nil or empty)
+		filters := viper.GetStringSlice("filters")
+
+		// Initialize hooks server
+		hooksServer := hooksserver.New(&hooksserver.Config{
+			Logger:  logger,
+			PiAPI:   piAPI,
+			Syncer:  syncer,
+			Filters: filters,
+		})
+
+		// Create HTTP router with logging middleware
 		mux := http.NewServeMux()
-		whServer := &webhookServer{
-			logger:  logger,
-			handler: mux,
-			piAPI: piholeapi.NewPiholeAPI(&piholeapi.Config{
-				Logger:   logger,
-				Endpoint: viper.GetString("pihole.endpoint"),
-				Password: viper.GetString("pihole.password"),
-			}),
+		handler := &requestLogger{
+			logger:      logger,
+			hooksServer: hooksServer,
+			handler:     mux,
 		}
+
+		setupRoutes(mux, hooksServer)
 
 		svr := &http.Server{
 			Addr:    ":" + port,
-			Handler: whServer,
+			Handler: handler,
 		}
-
-		setupRoutes(mux, whServer)
 
 		errChan := make(chan error, 1)
 
@@ -71,111 +89,27 @@ var serveCmd = &cobra.Command{
 	},
 }
 
-func setupRoutes(mux *http.ServeMux, wh *webhookServer) {
-	mux.HandleFunc("GET /", wh.handleNegotiation)
-	mux.HandleFunc("GET /records", wh.handleGetRecords)
-	mux.HandleFunc("POST /records", wh.handlePostRecords)
-	mux.HandleFunc("POST /adjustendpoints", wh.handleAdjustments)
+func setupRoutes(mux *http.ServeMux, hooksServer hooksserver.HooksServer) {
+	mux.HandleFunc("GET /", hooksServer.HandleNegotiation)
+	mux.HandleFunc("GET /records", hooksServer.HandleGetRecords)
+	mux.HandleFunc("POST /records", hooksServer.HandlePostRecords)
+	mux.HandleFunc("POST /adjustendpoints", hooksServer.HandleAdjustments)
 }
 
-type Record struct {
-	DnsName    string   `json:"dnsName"`
-	RecordTTL  int64    `json:"recordTTL"`
-	RecordType string   `json:"recordType"`
-	Targets    []string `json:"targets"`
+// requestLogger is an HTTP handler that logs requests before passing them to the hooks server
+type requestLogger struct {
+	logger      *slog.Logger
+	hooksServer hooksserver.HooksServer
+	handler     http.Handler
 }
 
-type webhookServer struct {
-	logger  *slog.Logger
-	handler http.Handler
-	piAPI   piholeapi.PiholeAPI
-}
-
-func (svr *webhookServer) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	svr.logger.Info("request received",
+// ServeHTTP TODO: remove later
+func (rl *requestLogger) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
+	rl.logger.Info("request received",
 		"method", req.Method,
 		"path", req.URL.Path,
 		"query", req.URL.Query().Encode(),
 	)
 
-	svr.handler.ServeHTTP(wr, req)
-}
-
-func (svr *webhookServer) handleNegotiation(wr http.ResponseWriter, req *http.Request) {
-	wr.Header().Set("content-type", "application/external.dns.webhook+json;version=1")
-	wr.WriteHeader(200)
-
-	json.NewEncoder(wr).Encode(map[string]interface{}{
-		"filters": []string{
-			"kind.local",
-		},
-	})
-}
-
-func (svr *webhookServer) handleGetRecords(wr http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
-	piRecords, err := svr.piAPI.GetDomains(ctx, piholeapi.LocalDNSTypeA)
-	if err != nil {
-		svr.logger.Error("unable to get domains", "error", err)
-		wr.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	wr.Header().Set("content-type", "application/external.dns.webhook+json;version=1")
-	wr.WriteHeader(http.StatusOK)
-
-	var records = make([]Record, 0, len(piRecords))
-
-	for _, r := range piRecords {
-		records = append(records, Record{
-			RecordTTL:  0,
-			DnsName:    r.Name,
-			Targets:    []string{r.Value},
-			RecordType: piholeapi.LocalDNSTypeA,
-		})
-	}
-
-	_ = json.NewEncoder(wr).Encode(records)
-}
-
-func (svr *webhookServer) handlePostRecords(wr http.ResponseWriter, req *http.Request) {
-	wr.Header().Set("content-type", "application/external.dns.webhook+json;version=1")
-	wr.WriteHeader(200)
-
-	b, err := io.ReadAll(req.Body)
-	if err != nil {
-		wr.WriteHeader(500)
-		svr.logger.Error("error reading body", "err", err)
-		return
-	}
-
-	svr.logger.Debug("request body", "content", string(b))
-}
-
-func (svr *webhookServer) handleAdjustments(wr http.ResponseWriter, req *http.Request) {
-	wr.Header().Set("content-type", "application/external.dns.webhook+json;version=1")
-	var records []Record
-
-	b, err := io.ReadAll(req.Body)
-	if err != nil {
-		wr.WriteHeader(500)
-		svr.logger.Error("error reading body", "err", err)
-		return
-	}
-
-	svr.logger.Debug("request body", "content", string(b))
-
-	err = json.Unmarshal(b, &records)
-	if err != nil {
-		wr.WriteHeader(500)
-		svr.logger.Error("error decoding body", "err", err)
-		return
-	}
-
-	wr.WriteHeader(200)
-	err = json.NewEncoder(wr).Encode(records)
-	if err != nil {
-		svr.logger.Error("error encoding body", "err", err)
-	}
+	rl.handler.ServeHTTP(wr, req)
 }

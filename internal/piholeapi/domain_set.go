@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord) error {
@@ -21,12 +20,8 @@ func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord) error {
 		return fmt.Errorf("unable to authenticate: %w", err)
 	}
 
-	// URL encode components
-	// Config: dns/hosts -> dns%2Fhosts
-	configEncoded := url.PathEscape("dns/hosts")
-	// Value: {ip} {domain} -> {ip}%20{domain}
+	// Value: {ip} {domain}
 	value := fmt.Sprintf("%s %s", r.Value, r.Name)
-	valueEncoded := url.PathEscape(value)
 
 	// Build URL path: /api/config/{config}/{value}
 	req, err := p.getRequest(ctx, sid)
@@ -34,7 +29,7 @@ func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord) error {
 		return fmt.Errorf("unable to create request: %w", err)
 	}
 
-	req.URL.Path = fmt.Sprintf("/api/config/%s/%s", configEncoded, valueEncoded)
+	req.URL.Path = fmt.Sprintf("/api/config/%s/%s", "dns/hosts", value)
 	req.Method = "PUT"
 
 	p.logger.Info("setting domain", "name", r.Name, "ip", r.Value)

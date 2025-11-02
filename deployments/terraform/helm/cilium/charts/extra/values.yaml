@@ -19,7 +19,7 @@ l2Announcements:
       loadBalancerIPs: true
 
 ipPools:
-  enabled: true
+  enabled: false
   pools:
     - name: lb-pool-1
       start: "192.168.4.220"

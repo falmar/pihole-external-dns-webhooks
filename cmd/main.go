@@ -14,18 +14,31 @@ import (
 
 var (
 	cfgFile string
+	logger  *slog.Logger
 
 	rootCmd = &cobra.Command{
 		Use:   "pew",
 		Short: "pihole external dns webhooks",
 		Long:  "PEW helps with pihole multi replica deployment local dns synchronization",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			return initConfig()
+			ctx := cmd.Context()
+			err := initConfig()
+			if err != nil {
+				return err
+			}
+
+			logger = slogger.New(
+				viper.GetString("log.format"),
+				viper.GetString("log.level"),
+			)
+			ctx = slogger.WithLogger(ctx, logger)
+
+			cmd.SetContext(ctx)
+
+			return nil
 		},
 	}
 )
-
-var initCmd = &cobra.Command{}
 
 func init() {
 	v := viper.GetViper()
@@ -33,21 +46,10 @@ func init() {
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
 
-	// pre-run flags to parse
-	initCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default: ./.config.yaml)")
-	initCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode")
-	initCmd.PersistentFlags().String("log.level", "info", "Log level (info|debug)")
-	initCmd.PersistentFlags().String("log.format", "text", "Log level (text|json)")
-
-	_ = viper.BindPFlag("config", initCmd.PersistentFlags().Lookup("config"))
 	_ = viper.BindEnv("config", "CONFIG_PATH")
-
 	_ = viper.BindEnv("debug", "DEBUG")
-	_ = viper.BindEnv("log.level", "PEW_LOG_LEVEL")
-	_ = viper.BindEnv("log.format", "PEW_LOG_FORMAT")
-
-	_ = initCmd.ParseFlags(os.Args)
-	// --
+	_ = viper.BindEnv("log.level", "LOG_LEVEL")
+	_ = viper.BindEnv("log.format", "LOG_FORMAT")
 }
 
 func initConfig() error {
@@ -64,16 +66,18 @@ func initConfig() error {
 }
 
 func setFlags(cmd *cobra.Command) {
-	rootCmd.PersistentFlags().StringP("config", "c", "", "config file (default: ./.config.yaml)")
-	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode")
-	rootCmd.PersistentFlags().String("log.level", "info", "Log level (info|debug)")
-	rootCmd.PersistentFlags().String("log.format", "text", "Log level (text|json)")
+	cmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default: ./.config.yaml)")
+	cmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode")
+	cmd.PersistentFlags().String("log.level", "info", "Log level (info|debug)")
+	cmd.PersistentFlags().String("log.format", "text", "Log level (text|json)")
 
-	rootCmd.PersistentFlags().StringP("port", "p", "8080", "HTTP server port")
-	rootCmd.PersistentFlags().String("pihole.endpoint", "http://127.0.0.1:80", "Pihole base URL")
-	rootCmd.PersistentFlags().String("pihole.password", "", "Pihole password used for authentication")
+	cmd.PersistentFlags().StringP("port", "p", "8080", "HTTP server port")
+	cmd.PersistentFlags().String("pihole.endpoint", "http://127.0.0.1:80", "Pihole base URL")
+	cmd.PersistentFlags().String("pihole.password", "", "Pihole password used for authentication")
 
-	_ = viper.BindPFlags(rootCmd.PersistentFlags())
+	cmd.PersistentFlags().StringSlice("filters", nil, "Domain filters for ExternalDNS negotiation (can be empty)")
+
+	_ = viper.BindPFlags(cmd.PersistentFlags())
 }
 
 func main() {
@@ -84,14 +88,13 @@ func main() {
 
 	setFlags(rootCmd)
 
-	logger := slogger.New(
-		viper.GetString("log.format"),
-		viper.GetString("log.level"),
-	)
-	ctx = slogger.WithLogger(ctx, logger)
-
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		logger.Error("unexpected error", "err", err)
+		if logger != nil {
+			logger.Error(err.Error())
+		} else {
+			slog.Error(err.Error())
+		}
+
 		os.Exit(1)
 	}
 }
