@@ -6,7 +6,7 @@ import (
 	"github.com/falmar/pihole-external-dns-webhooks/internal/piholeapi"
 )
 
-// Record represents an ExternalDNS webhook record format
+// Record represents an ExternalDNS webhook record format.
 type Record struct {
 	DNSName string `json:"DNSName,omitempty"`
 
@@ -20,16 +20,16 @@ type Record struct {
 	ProviderSpecific []any             `json:"providerSpecific,omitempty"`
 }
 
-// ChangeSetRequest represents the ExternalDNS POST /records request format
-// which includes create, update, and delete operations
+// ChangeSetRequest represents the ExternalDNS POST /records request format.
+// which includes create, update, and delete operations.
 type ChangeSetRequest struct {
 	Create []*Record `json:"create,omitempty"`
 	Update []*Record `json:"update,omitempty"`
 	Delete []*Record `json:"delete,omitempty"`
 }
 
-// ToLocalDNSRecord converts an ExternalDNS Record to a Pi-hole LocalDNSRecord
-// Only supports A records for now (CNAME is on roadmap)
+// ToLocalDNSRecord converts an ExternalDNS Record to a Pi-hole LocalDNSRecord.
+// Only supports A records for now (CNAME is on roadmap).
 func (r *Record) ToLocalDNSRecord() (*piholeapi.LocalDNSRecord, error) {
 	if r.RecordType != string(piholeapi.LocalDNSTypeA) {
 		return nil, fmt.Errorf("unsupported record type: %s (only A records are supported)", r.RecordType)
@@ -48,7 +48,7 @@ func (r *Record) ToLocalDNSRecord() (*piholeapi.LocalDNSRecord, error) {
 	}, nil
 }
 
-// FromLocalDNSRecord converts a Pi-hole LocalDNSRecord to an ExternalDNS Record
+// FromLocalDNSRecord converts a Pi-hole LocalDNSRecord to an ExternalDNS Record.
 func FromLocalDNSRecord(lr *piholeapi.LocalDNSRecord) *Record {
 	var targets []string
 	if lr.Value != "" {
@@ -72,13 +72,13 @@ func NormalizeDNSRecord(r *Record) *Record {
 	}
 }
 
-// RecordKey creates a unique key for a record (dnsName + recordType)
-// This is used for comparing records in change set processing
+// RecordKey creates a unique key for a record (dnsName + recordType).
+// This is used for comparing records in change set processing.
 func (r *Record) RecordKey() string {
 	return fmt.Sprintf("%s:%s", r.DNSName, r.RecordType)
 }
 
-// Equals checks if two records are equal (same dnsName, recordType, and targets)
+// Equals checks if two records are equal (same dnsName, recordType, and targets).
 func (r *Record) Equals(other *Record) bool {
 	if r.DNSName != other.DNSName {
 		return false

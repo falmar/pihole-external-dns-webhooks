@@ -9,7 +9,7 @@ import (
 	"github.com/falmar/pihole-external-dns-webhooks/internal/piholeapi"
 )
 
-// Service is the domain service interface for DNS record management
+// Service is the domain service interface for DNS record management.
 type Service interface {
 	GetRecords(ctx context.Context) ([]*Record, error)
 	ApplyChanges(ctx context.Context, req *ChangeSetRequest) (*ChangeSetResult, error)
@@ -17,7 +17,7 @@ type Service interface {
 	GetFilters() []string
 }
 
-// serviceImpl implements the Service interface
+// serviceImpl implements the Service interface.
 type serviceImpl struct {
 	logger  *slog.Logger
 	piAPI   piholeapi.PiholeAPI
@@ -25,7 +25,7 @@ type serviceImpl struct {
 	filters []string
 }
 
-// NewService creates a new service instance
+// NewService creates a new service instance.
 func NewService(logger *slog.Logger, piAPI piholeapi.PiholeAPI, syncer dnssyncer.DNSSyncer, filters []string) Service {
 	if filters == nil {
 		filters = []string{}
@@ -39,7 +39,7 @@ func NewService(logger *slog.Logger, piAPI piholeapi.PiholeAPI, syncer dnssyncer
 	}
 }
 
-// GetRecords fetches current DNS records from Pi-hole and converts them to ExternalDNS format
+// GetRecords fetches current DNS records from Pi-hole and converts them to ExternalDNS format.
 func (s *serviceImpl) GetRecords(ctx context.Context) ([]*Record, error) {
 	// Fetch A records from Pi-hole
 	piRecords, err := s.piAPI.GetDomains(ctx, piholeapi.LocalDNSTypeA)
@@ -56,7 +56,7 @@ func (s *serviceImpl) GetRecords(ctx context.Context) ([]*Record, error) {
 	return records, nil
 }
 
-// ApplyChanges processes a change set request by computing diffs and applying changes
+// ApplyChanges processes a change set request by computing diffs and applying changes.
 func (s *serviceImpl) ApplyChanges(ctx context.Context, req *ChangeSetRequest) (*ChangeSetResult, error) {
 	// Extract all records from create, update, and delete operations
 	// The desired state is the union of create and update operations
@@ -124,7 +124,7 @@ func (s *serviceImpl) ApplyChanges(ctx context.Context, req *ChangeSetRequest) (
 	return result, nil
 }
 
-// AdjustEndpoints normalizes a set of records
+// AdjustEndpoints normalizes a set of records.
 func (s *serviceImpl) AdjustEndpoints(_ context.Context, records []*Record) ([]*Record, error) {
 	normalized := make([]*Record, 0, len(records))
 	for _, r := range records {
@@ -133,7 +133,7 @@ func (s *serviceImpl) AdjustEndpoints(_ context.Context, records []*Record) ([]*
 	return normalized, nil
 }
 
-// GetFilters returns the configured domain filters
+// GetFilters returns the configured domain filters.
 func (s *serviceImpl) GetFilters() []string {
 	return s.filters
 }

@@ -54,7 +54,11 @@ func (p *piholeAPI) authenticate(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("unable to authenticate: %w", err)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			p.logger.Warn("error closing response body", "error", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)

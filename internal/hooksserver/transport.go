@@ -9,7 +9,7 @@ import (
 	"github.com/falmar/pihole-external-dns-webhooks/internal/kit"
 )
 
-// HTTPTransport implements the HooksServer interface using go-kit architecture
+// HTTPTransport implements the HooksServer interface using go-kit architecture.
 type HTTPTransport struct {
 	negotiationEndpoint     kit.Endpoint
 	getRecordsEndpoint      kit.Endpoint
@@ -18,7 +18,7 @@ type HTTPTransport struct {
 	logger                  *slog.Logger
 }
 
-// NewHTTPTransport creates a new HTTP transport
+// NewHTTPTransport creates a new HTTP transport.
 func NewHTTPTransport(
 	negotiationEndpoint kit.Endpoint,
 	getRecordsEndpoint kit.Endpoint,
@@ -35,9 +35,13 @@ func NewHTTPTransport(
 	}
 }
 
-// HandleNegotiation handles GET / - returns supported filters
+// HandleNegotiation handles GET / - returns supported filters.
 func (t *HTTPTransport) HandleNegotiation(wr http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
+	defer func() {
+		if err := req.Body.Close(); err != nil {
+			t.logger.Warn("error closing request body", "error", err)
+		}
+	}()
 
 	ctx := req.Context()
 	request := negotiationRequest{}
@@ -59,9 +63,13 @@ func (t *HTTPTransport) HandleNegotiation(wr http.ResponseWriter, req *http.Requ
 	}
 }
 
-// HandleGetRecords handles GET /records - fetches current state from Pi-hole
+// HandleGetRecords handles GET /records - fetches current state from Pi-hole.
 func (t *HTTPTransport) HandleGetRecords(wr http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
+	defer func() {
+		if err := req.Body.Close(); err != nil {
+			t.logger.Warn("error closing request body", "error", err)
+		}
+	}()
 
 	ctx := req.Context()
 	request := getRecordsRequest{}
@@ -83,9 +91,13 @@ func (t *HTTPTransport) HandleGetRecords(wr http.ResponseWriter, req *http.Reque
 	}
 }
 
-// HandlePostRecords handles POST /records - processes change sets
+// HandlePostRecords handles POST /records - processes change sets.
 func (t *HTTPTransport) HandlePostRecords(wr http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
+	defer func() {
+		if err := req.Body.Close(); err != nil {
+			t.logger.Warn("error closing request body", "error", err)
+		}
+	}()
 
 	// Validate content type
 	if req.Header.Get("content-type") != ContentType {
@@ -146,9 +158,13 @@ func (t *HTTPTransport) HandlePostRecords(wr http.ResponseWriter, req *http.Requ
 	wr.WriteHeader(http.StatusOK)
 }
 
-// HandleAdjustments handles POST /adjustendpoints - normalizes posted records
+// HandleAdjustments handles POST /adjustendpoints - normalizes posted records.
 func (t *HTTPTransport) HandleAdjustments(wr http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
+	defer func() {
+		if err := req.Body.Close(); err != nil {
+			t.logger.Warn("error closing request body", "error", err)
+		}
+	}()
 
 	ctx := req.Context()
 

@@ -12,11 +12,11 @@ import (
 	"github.com/falmar/pihole-external-dns-webhooks/internal/piholeapi"
 )
 
-// mockDNSSyncer is a mock implementation of the DNSSyncer interface
+// mockDNSSyncer is a mock implementation of the DNSSyncer interface.
 type mockDNSSyncer struct{}
 
-// setupService creates a service instance with the given mocks and filters
-func setupService(t *testing.T, mockAPI *mockPiholeAPI, filters []string) Service {
+// setupService creates a service instance with the given mocks and filters.
+func setupService(_ *testing.T, mockAPI *mockPiholeAPI, filters []string) Service {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	syncer := &mockDNSSyncer{}
 	return NewService(logger, mockAPI, syncer, filters)

@@ -29,7 +29,7 @@ linters:
           - gocyclo
           - gocognit
           - funlen
-        path: _test\.go
+        path: ".*_test.go"
 
 formatters:
   enable:

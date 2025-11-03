@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -74,7 +75,7 @@ var serveCmd = &cobra.Command{
 			case <-ctx.Done():
 				err := svr.Close()
 				if err != nil {
-					return err
+					return fmt.Errorf("unable to close server: %w", err)
 				}
 			case err := <-errChan:
 				if err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -98,14 +99,14 @@ func setupRoutes(mux *http.ServeMux, hooksServer hooksserver.HooksServer) {
 	mux.HandleFunc("POST /adjustendpoints", hooksServer.HandleAdjustments)
 }
 
-// requestLogger is an HTTP handler that logs requests before passing them to the hooks server
+// requestLogger is an HTTP handler that logs requests before passing them to the hooks server.
 type requestLogger struct {
 	logger      *slog.Logger
 	hooksServer hooksserver.HooksServer
 	handler     http.Handler
 }
 
-// ServeHTTP TODO: remove later
+// ServeHTTP TODO: remove later.
 func (rl *requestLogger) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	rl.logger.Info("request received",
 		"method", req.Method,

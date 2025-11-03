@@ -38,7 +38,11 @@ func (p *piholeAPI) deleteDomain(ctx context.Context, r *LocalDNSRecord) error {
 	if err != nil {
 		return fmt.Errorf("unable to delete domain: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			p.logger.Warn("error closing response body", "error", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)

@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// mockService is a mock implementation of the Service interface
+// mockService is a mock implementation of the Service interface.
 type mockService struct {
 	GetFiltersFunc      func() []string
 	GetRecordsFunc      func(ctx context.Context) ([]*Record, error)
@@ -470,7 +470,7 @@ func TestMakePostRecordsEndpoint(t *testing.T) {
 				if tt.name == "partial failure result has errors" {
 					if got != nil {
 						resp := got.(postRecordsResponse)
-						if resp.ChangeSetResult == nil || len(resp.ChangeSetResult.Errors) != 2 {
+						if resp.ChangeSetResult == nil || len(resp.Errors) != 2 {
 							t.Errorf("makePostRecordsEndpoint() partial failure should return result with errors")
 						}
 					}
@@ -486,28 +486,28 @@ func TestMakePostRecordsEndpoint(t *testing.T) {
 					t.Errorf("makePostRecordsEndpoint() ChangeSetResult = %v, want %v", resp.ChangeSetResult, tt.want.ChangeSetResult)
 					return
 				}
-				if resp.ChangeSetResult.Created != tt.want.ChangeSetResult.Created {
-					t.Errorf("makePostRecordsEndpoint() Created = %d, want %d", resp.ChangeSetResult.Created, tt.want.ChangeSetResult.Created)
+				if resp.Created != tt.want.Created {
+					t.Errorf("makePostRecordsEndpoint() Created = %d, want %d", resp.Created, tt.want.Created)
 				}
-				if resp.ChangeSetResult.Updated != tt.want.ChangeSetResult.Updated {
-					t.Errorf("makePostRecordsEndpoint() Updated = %d, want %d", resp.ChangeSetResult.Updated, tt.want.ChangeSetResult.Updated)
+				if resp.Updated != tt.want.Updated {
+					t.Errorf("makePostRecordsEndpoint() Updated = %d, want %d", resp.Updated, tt.want.Updated)
 				}
-				if resp.ChangeSetResult.Deleted != tt.want.ChangeSetResult.Deleted {
-					t.Errorf("makePostRecordsEndpoint() Deleted = %d, want %d", resp.ChangeSetResult.Deleted, tt.want.ChangeSetResult.Deleted)
+				if resp.Deleted != tt.want.Deleted {
+					t.Errorf("makePostRecordsEndpoint() Deleted = %d, want %d", resp.Deleted, tt.want.Deleted)
 				}
-				if len(resp.ChangeSetResult.Errors) != len(tt.want.ChangeSetResult.Errors) {
-					t.Errorf("makePostRecordsEndpoint() Errors length = %d, want %d", len(resp.ChangeSetResult.Errors), len(tt.want.ChangeSetResult.Errors))
+				if len(resp.Errors) != len(tt.want.Errors) {
+					t.Errorf("makePostRecordsEndpoint() Errors length = %d, want %d", len(resp.Errors), len(tt.want.Errors))
 				} else {
-					for i := range resp.ChangeSetResult.Errors {
-						if resp.ChangeSetResult.Errors[i] == nil && tt.want.ChangeSetResult.Errors[i] == nil {
+					for i := range resp.Errors {
+						if resp.Errors[i] == nil && tt.want.Errors[i] == nil {
 							continue
 						}
-						if resp.ChangeSetResult.Errors[i] == nil || tt.want.ChangeSetResult.Errors[i] == nil {
-							t.Errorf("makePostRecordsEndpoint() Errors[%d] = %v, want %v", i, resp.ChangeSetResult.Errors[i], tt.want.ChangeSetResult.Errors[i])
+						if resp.Errors[i] == nil || tt.want.Errors[i] == nil {
+							t.Errorf("makePostRecordsEndpoint() Errors[%d] = %v, want %v", i, resp.Errors[i], tt.want.Errors[i])
 							continue
 						}
-						if resp.ChangeSetResult.Errors[i].Error() != tt.want.ChangeSetResult.Errors[i].Error() {
-							t.Errorf("makePostRecordsEndpoint() Errors[%d] = %v, want %v", i, resp.ChangeSetResult.Errors[i], tt.want.ChangeSetResult.Errors[i])
+						if resp.Errors[i].Error() != tt.want.Errors[i].Error() {
+							t.Errorf("makePostRecordsEndpoint() Errors[%d] = %v, want %v", i, resp.Errors[i], tt.want.Errors[i])
 						}
 					}
 				}

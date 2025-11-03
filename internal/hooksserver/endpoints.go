@@ -11,43 +11,43 @@ import (
 
 // Endpoint request/response types
 
-// negotiationRequest is empty (no input needed)
+// negotiationRequest is empty (no input needed).
 type negotiationRequest struct{}
 
-// negotiationResponse contains the filters for negotiation
+// negotiationResponse contains the filters for negotiation.
 type negotiationResponse struct {
 	Filters []string `json:"filters"`
 }
 
-// getRecordsRequest is empty (no input needed)
+// getRecordsRequest is empty (no input needed).
 type getRecordsRequest struct{}
 
-// getRecordsResponse contains the list of records
+// getRecordsResponse contains the list of records.
 type getRecordsResponse struct {
 	Records []*Record `json:"records,omitempty"`
 }
 
-// postRecordsRequest contains the change set request
+// postRecordsRequest contains the change set request.
 type postRecordsRequest struct {
 	*ChangeSetRequest
 }
 
-// postRecordsResponse contains the change set result
+// postRecordsResponse contains the change set result.
 type postRecordsResponse struct {
 	*ChangeSetResult
 }
 
-// adjustEndpointsRequest contains the list of records to adjust
+// adjustEndpointsRequest contains the list of records to adjust.
 type adjustEndpointsRequest struct {
 	Records []*Record `json:"records"`
 }
 
-// adjustEndpointsResponse contains the adjusted records
+// adjustEndpointsResponse contains the adjusted records.
 type adjustEndpointsResponse struct {
 	Records []*Record `json:"records"`
 }
 
-// makeNegotiationEndpoint creates an endpoint for the negotiation handler
+// makeNegotiationEndpoint creates an endpoint for the negotiation handler.
 func makeNegotiationEndpoint(svc Service, _ *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		_, ok := request.(negotiationRequest) // Validate request type
@@ -63,7 +63,7 @@ func makeNegotiationEndpoint(svc Service, _ *slog.Logger) kit.Endpoint {
 	}
 }
 
-// makeGetRecordsEndpoint creates an endpoint for the get records handler
+// makeGetRecordsEndpoint creates an endpoint for the get records handler.
 func makeGetRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		_, ok := request.(getRecordsRequest) // Validate request type
@@ -83,7 +83,7 @@ func makeGetRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	}
 }
 
-// makePostRecordsEndpoint creates an endpoint for the post records handler
+// makePostRecordsEndpoint creates an endpoint for the post records handler.
 func makePostRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req, ok := request.(postRecordsRequest)
@@ -98,8 +98,8 @@ func makePostRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 		// Validate records - extract all records from create, update, and delete operations
 		// The desired state is the union of create and update operations
 		var desiredRecords []*Record
-		desiredRecords = append(desiredRecords, req.ChangeSetRequest.Create...)
-		desiredRecords = append(desiredRecords, req.ChangeSetRequest.Update...)
+		desiredRecords = append(desiredRecords, req.Create...)
+		desiredRecords = append(desiredRecords, req.Update...)
 
 		// Validate records
 		for i, record := range desiredRecords {
@@ -142,7 +142,7 @@ func makePostRecordsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	}
 }
 
-// makeAdjustEndpointsEndpoint creates an endpoint for the adjust endpoints handler
+// makeAdjustEndpointsEndpoint creates an endpoint for the adjust endpoints handler.
 func makeAdjustEndpointsEndpoint(svc Service, logger *slog.Logger) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req, ok := request.(adjustEndpointsRequest)

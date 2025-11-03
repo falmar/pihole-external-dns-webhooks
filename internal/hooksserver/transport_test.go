@@ -15,7 +15,7 @@ import (
 	"github.com/falmar/pihole-external-dns-webhooks/internal/kit"
 )
 
-// makeMockEndpoint creates a mock endpoint for testing
+// makeMockEndpoint creates a mock endpoint for testing.
 func makeMockEndpoint(callFunc func(ctx context.Context, request interface{}) (interface{}, error)) kit.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		return callFunc(ctx, request)

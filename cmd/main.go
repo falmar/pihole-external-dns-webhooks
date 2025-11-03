@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -58,8 +59,11 @@ func initConfig() error {
 	if cfgFile != "" {
 		slog.Info("reading config", "path", cfgFile)
 		v.SetConfigFile(cfgFile)
+		if err := v.ReadInConfig(); err != nil {
+			return fmt.Errorf("unable to read config: %w", err)
+		}
 
-		return v.ReadInConfig()
+		return nil
 	}
 
 	return nil

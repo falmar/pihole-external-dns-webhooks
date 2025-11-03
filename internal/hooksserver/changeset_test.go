@@ -11,7 +11,7 @@ import (
 	"github.com/falmar/pihole-external-dns-webhooks/internal/piholeapi"
 )
 
-// mockPiholeAPI is a mock implementation of the PiholeAPI interface
+// mockPiholeAPI is a mock implementation of the PiholeAPI interface.
 type mockPiholeAPI struct {
 	GetDomainsFunc   func(ctx context.Context, t piholeapi.LocalDNSType) ([]*piholeapi.LocalDNSRecord, error)
 	SetDomainFunc    func(ctx context.Context, r *piholeapi.LocalDNSRecord) error
@@ -258,7 +258,7 @@ func TestCreateChangeSet(t *testing.T) {
 	}
 }
 
-// equalChangeSet compares two ChangeSets by content, not pointer equality
+// equalChangeSet compares two ChangeSets by content, not pointer equality.
 func equalChangeSet(a, b *ChangeSet) bool {
 	if a == nil && b == nil {
 		return true
@@ -278,7 +278,7 @@ func equalChangeSet(a, b *ChangeSet) bool {
 	return true
 }
 
-// equalLocalDNSRecordSlice compares two slices of LocalDNSRecord by content
+// equalLocalDNSRecordSlice compares two slices of LocalDNSRecord by content.
 func equalLocalDNSRecordSlice(a, b []*piholeapi.LocalDNSRecord) bool {
 	if len(a) != len(b) {
 		return false

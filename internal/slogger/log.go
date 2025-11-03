@@ -7,7 +7,7 @@ import (
 )
 
 func New(format string, level string) *slog.Logger {
-	var opts *slog.HandlerOptions = &slog.HandlerOptions{
+	var opts = &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}
 	var h slog.Handler

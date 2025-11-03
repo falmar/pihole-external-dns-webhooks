@@ -35,9 +35,13 @@ func (p *piholeAPI) getConfig(ctx context.Context, element string) (*configRespo
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			p.logger.Warn("error closing response body", "error", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
