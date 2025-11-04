@@ -6,7 +6,11 @@ import (
 	"net/http"
 )
 
-func (p *piholeAPI) deleteDomain(ctx context.Context, r *LocalDNSRecord) error {
+func (p *piholeAPI) DeleteDomain(ctx context.Context, r *LocalDNSRecord) error {
+	if r == nil {
+		return fmt.Errorf("record cannot be nil")
+	}
+
 	if r.Type != LocalDNSTypeA {
 		return fmt.Errorf("DeleteDomain not implemented for type %s", r.Type)
 	}
@@ -19,6 +23,11 @@ func (p *piholeAPI) deleteDomain(ctx context.Context, r *LocalDNSRecord) error {
 	if err != nil {
 		return fmt.Errorf("unable to authenticate: %w", err)
 	}
+
+	return p.deleteDomain(ctx, r, sid)
+}
+
+func (p *piholeAPI) deleteDomain(ctx context.Context, r *LocalDNSRecord, sid string) error {
 
 	// Value: {ip} {domain}
 	value := fmt.Sprintf("%s %s", r.Value, r.Name)

@@ -6,7 +6,11 @@ import (
 	"net/http"
 )
 
-func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord) error {
+func (p *piholeAPI) SetDomain(ctx context.Context, r *LocalDNSRecord) error {
+	if r == nil {
+		return fmt.Errorf("record cannot be nil")
+	}
+
 	if r.Type != LocalDNSTypeA {
 		return fmt.Errorf("SetDomain not implemented for type %s", r.Type)
 	}
@@ -20,10 +24,14 @@ func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord) error {
 		return fmt.Errorf("unable to authenticate: %w", err)
 	}
 
+	return p.setDomain(ctx, r, sid)
+}
+
+func (p *piholeAPI) setDomain(ctx context.Context, r *LocalDNSRecord, sid string) error {
+
 	// Value: {ip} {domain}
 	value := fmt.Sprintf("%s %s", r.Value, r.Name)
 
-	// Build URL path: /api/config/{config}/{value}
 	req, err := p.getRequest(ctx, sid)
 	if err != nil {
 		return fmt.Errorf("unable to create request: %w", err)

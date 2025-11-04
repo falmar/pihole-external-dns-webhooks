@@ -30,6 +30,11 @@ func (p *piholeAPI) authenticate(ctx context.Context) (string, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	// Double-check after acquiring lock
+	if p.sessionID != "" && time.Since(p.lastAuth) < p.authTimeout {
+		return p.sessionID, nil
+	}
+
 	p.logger.Info("authenticating with pihole", "endpoint", p.endpoint)
 
 	req, err := p.getRequest(ctx, "")

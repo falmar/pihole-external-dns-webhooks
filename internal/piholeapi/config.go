@@ -19,12 +19,7 @@ type configResponse struct {
 	Took float64 `json:"took"`
 }
 
-func (p *piholeAPI) getConfig(ctx context.Context, element string) (*configResponse, error) {
-	sid, err := p.authenticate(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+func (p *piholeAPI) getConfig(ctx context.Context, element string, sid string) (*configResponse, error) {
 	req, err := p.getRequest(ctx, sid)
 	if err != nil {
 		return nil, err

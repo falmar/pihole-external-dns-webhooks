@@ -3,12 +3,23 @@ package piholeapi
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
 )
+
+const (
+	DefaultAuthTimeout = 55 * time.Minute
+	DefaultHTTPTimeout = 30 * time.Second
+)
+
+// HTTPDoer is an interface for making HTTP requests.
+type HTTPDoer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
 
 type LocalDNSType string
 
@@ -30,21 +41,40 @@ type PiholeAPI interface {
 }
 
 type Config struct {
-	Logger   *slog.Logger
-	Password string
-	Endpoint string
+	Logger      *slog.Logger
+	Password    string
+	Endpoint    string
+	Client      HTTPDoer
+	AuthTimeout time.Duration
 }
 
 func NewPiholeAPI(cfg *Config) PiholeAPI {
+	client := cfg.Client
+	if client == nil {
+		client = &http.Client{
+			Timeout: DefaultHTTPTimeout,
+		}
+	}
+
+	authTimeout := cfg.AuthTimeout
+	if authTimeout <= 0 {
+		authTimeout = DefaultAuthTimeout
+	}
+
+	logger := cfg.Logger
+	if logger == nil {
+		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+
 	return &piholeAPI{
 		endpoint: cfg.Endpoint,
 		pass:     cfg.Password,
-		logger:   cfg.Logger,
+		logger:   logger,
 
-		authTimeout: time.Minute * 55,
+		authTimeout: authTimeout,
 
 		mu:     &sync.RWMutex{},
-		client: &http.Client{},
+		client: client,
 	}
 }
 
@@ -57,11 +87,14 @@ type piholeAPI struct {
 
 	mu     *sync.RWMutex
 	logger *slog.Logger
-	client *http.Client
+	client HTTPDoer
 }
 
 func (p *piholeAPI) getRequest(ctx context.Context, sessID string) (*http.Request, error) {
-	u, _ := url.Parse(p.endpoint)
+	u, err := url.Parse(p.endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("invalid endpoint URL: %w", err)
+	}
 
 	headers := http.Header{}
 	headers.Set("accept", "application/json")
@@ -75,20 +108,4 @@ func (p *piholeAPI) getRequest(ctx context.Context, sessID string) (*http.Reques
 	}
 
 	return req.WithContext(ctx), nil
-}
-
-func (p *piholeAPI) GetDomains(ctx context.Context, t LocalDNSType) ([]*LocalDNSRecord, error) {
-	if t == LocalDNSTypeA {
-		return p.fetchARecords(ctx)
-	}
-
-	return nil, fmt.Errorf("not implemented for dns type: %s", t)
-}
-
-func (p *piholeAPI) SetDomain(ctx context.Context, r *LocalDNSRecord) error {
-	return p.setDomain(ctx, r)
-}
-
-func (p *piholeAPI) DeleteDomain(ctx context.Context, r *LocalDNSRecord) error {
-	return p.deleteDomain(ctx, r)
 }
