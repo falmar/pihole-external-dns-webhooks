@@ -1,6 +1,3 @@
 pihole:
-  endpoint: "http://pihole"
-  password: ""
-
-filters:
-  - "kind.local"
+  endpoint: "http://pihole.local:80"
+  password: "your-pihole-admin-password-here"
