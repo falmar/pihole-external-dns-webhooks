@@ -73,7 +73,7 @@ func setFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default: ./.config.yaml)")
 	cmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode")
 	cmd.PersistentFlags().String("log.level", "info", "Log level (info|debug)")
-	cmd.PersistentFlags().String("log.format", "text", "Log level (text|json)")
+	cmd.PersistentFlags().String("log.format", "text", "Log format (text|json)")
 
 	cmd.PersistentFlags().StringP("port", "p", "8080", "HTTP server port")
 	cmd.PersistentFlags().String("pihole.endpoint", "http://127.0.0.1:80", "Pihole base URL")
