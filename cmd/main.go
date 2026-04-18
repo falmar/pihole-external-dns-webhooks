@@ -8,14 +8,14 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/falmar/pihole-external-dns-webhooks/internal/slogger"
+	"github.com/falmar/slogger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var (
 	cfgFile string
-	logger  *slog.Logger
+	logger  *slog.Logger = slog.New(slog.NewTextHandler(os.Stderr, nil))
 
 	rootCmd = &cobra.Command{
 		Use:   "pew",
@@ -28,10 +28,11 @@ var (
 				return err
 			}
 
-			logger = slogger.New(
-				viper.GetString("log.format"),
-				viper.GetString("log.level"),
-			)
+			logger = slogger.New(slogger.Config{
+				Writer: os.Stderr,
+				Format: slogger.Format(viper.GetString("log.format")),
+				Level:  logLevelFromText(viper.GetString("log.level")),
+			})
 			ctx = slogger.WithLogger(ctx, logger)
 
 			cmd.SetContext(ctx)
@@ -93,12 +94,18 @@ func main() {
 	setFlags(rootCmd)
 
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		if logger != nil {
-			logger.Error(err.Error())
-		} else {
-			slog.Error(err.Error())
-		}
-
+		logger.Error(err.Error())
 		os.Exit(1)
+	}
+}
+
+func logLevelFromText(lvl string) slog.Level {
+	switch strings.ToLower(lvl) {
+	case "debug":
+		return slog.LevelDebug
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
 	}
 }

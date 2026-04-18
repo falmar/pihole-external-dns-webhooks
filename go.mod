@@ -1,6 +1,6 @@
 module github.com/falmar/pihole-external-dns-webhooks
 
-go 1.24.0
+go 1.25.1
 
 require (
 	github.com/spf13/cobra v1.10.1
@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/falmar/slogger v0.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

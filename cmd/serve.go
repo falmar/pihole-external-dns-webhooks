@@ -3,14 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/falmar/pihole-external-dns-webhooks/internal/dnssyncer"
 	"github.com/falmar/pihole-external-dns-webhooks/internal/hooksserver"
 	"github.com/falmar/pihole-external-dns-webhooks/internal/piholeapi"
-	"github.com/falmar/pihole-external-dns-webhooks/internal/slogger"
+	"github.com/falmar/slogger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -97,22 +96,4 @@ func setupRoutes(mux *http.ServeMux, hooksServer hooksserver.HooksServer) {
 	mux.HandleFunc("GET /records", hooksServer.HandleGetRecords)
 	mux.HandleFunc("POST /records", hooksServer.HandlePostRecords)
 	mux.HandleFunc("POST /adjustendpoints", hooksServer.HandleAdjustments)
-}
-
-// requestLogger is an HTTP handler that logs requests before passing them to the hooks server.
-type requestLogger struct {
-	logger      *slog.Logger
-	hooksServer hooksserver.HooksServer
-	handler     http.Handler
-}
-
-// ServeHTTP TODO: remove later.
-func (rl *requestLogger) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	rl.logger.Info("request received",
-		"method", req.Method,
-		"path", req.URL.Path,
-		"query", req.URL.Query().Encode(),
-	)
-
-	rl.handler.ServeHTTP(wr, req)
 }
